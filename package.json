@@ -1,0 +1,35 @@
+{
+  "name": "customer-support-agent-fyp",
+  "version": "1.0.0",
+  "description": "Autonomous AI Customer Support Agent for Clothing E-commerce Store",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test-all.js",
+    "test:gemini": "node test-gemini.js",
+    "test:db": "node test-db.js",
+    "test:qdrant": "node test-qdrant.js",
+    "test:shopify": "node test-shopify.js",
+    "setup:qdrant": "node database/scripts/create-qdrant-collections.js",
+    "setup:faqs": "node database/scripts/generate-faq-embeddings.js",
+    "sync:products": "node database/scripts/sync-shopify-products.js"
+  },
+  "keywords": [
+    "ai",
+    "chatbot",
+    "customer-support",
+    "n8n",
+    "gemini",
+    "shopify"
+  ],
+  "author": "Wajid",
+  "license": "MIT",
+  "dependencies": {
+    "@google/generative-ai": "^0.21.0",
+    "@qdrant/js-client-rest": "^1.16.2",
+    "@supabase/supabase-js": "^2.93.3",
+    "dotenv": "^16.6.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
