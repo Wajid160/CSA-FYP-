@@ -131,10 +131,11 @@ You can test the system locally using the chat widget:
 
 ---
 
-## 👨‍💻 Author
+## 👨‍💻 Authors
 
-**Wajid**  
-Computer Science Final Year Project  
+**Wajid Javed** & **Naveed Soomro**  
+*University of Sindh, Jamshoro*  
+Computer Science Final Year Project (FYP)  
 *Building the future of autonomous e-commerce support.*
 
 ---

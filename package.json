@@ -17,7 +17,7 @@
     "gemini",
     "shopify"
   ],
-  "author": "Wajid",
+  "author": "Wajid Javed & Naveed Soomro",
   "license": "MIT",
   "dependencies": {
     "@google/generative-ai": "^0.21.0",
