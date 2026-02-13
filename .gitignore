@@ -60,3 +60,18 @@ temp/
 
 # Shopify
 .shopify/
+
+# Product images (too large for git)
+Products Images/
+
+# FYP poster template
+*.pptx
+
+# Data files
+apparel*.csv
+
+# Resolved files
+*.resolved
+
+# Gemini agent internal docs
+.agent/QUICKREF.md

@@ -1,0 +1,222 @@
+{
+    "name": "ClothyMax Support Agent",
+    "nodes": [
+        {
+            "parameters": {
+                "httpMethod": "POST",
+                "path": "orchestrator",
+                "responseMode": "lastNode",
+                "options": {}
+            },
+            "id": "d1a2b3c4-1111-4111-8111-111111111111",
+            "name": "Webhook",
+            "type": "n8n-nodes-base.webhook",
+            "typeVersion": 2,
+            "position": [
+                240,
+                300
+            ],
+            "webhookId": "orchestrator-main"
+        },
+        {
+            "parameters": {
+                "agent": "toolsAgent",
+                "promptType": "define",
+                "text": "={{ $json.body.question }}",
+                "hasOutputParser": false,
+                "options": {
+                    "systemMessage": "You are ClothyMax AI, a helpful customer support assistant for ClothyMax clothing store.\n\n## Your Capabilities\nYou have access to tools to help customers:\n1. **FAQ Tool**: Search store policies, shipping info, returns, sizing guides\n2. More tools coming soon (Product Search, Order Status)\n\n## Guidelines\n- Be CONCISE: Keep responses to 2-3 sentences max\n- Be WARM: Use a friendly, conversational tone\n- Be ACCURATE: Only provide info from your tools\n- Use the FAQ tool for policy/shipping/return questions\n- For product search or order tracking, politely explain these features are coming soon\n- If uncertain, offer to connect them to human support\n\n## Response Format\n- No markdown formatting\n- Use emojis sparingly for warmth\n- Keep responses under 100 words"
+                }
+            },
+            "id": "d1a2b3c4-2222-4222-8222-222222222222",
+            "name": "AI Agent",
+            "type": "@n8n/n8n-nodes-langchain.agent",
+            "typeVersion": 1.7,
+            "position": [
+                460,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "model": "models/gemini-1.5-flash",
+                "options": {
+                    "temperature": 0.3,
+                    "topK": 40,
+                    "topP": 0.95,
+                    "maxOutputTokens": 200
+                }
+            },
+            "id": "d1a2b3c4-3333-4333-8333-333333333333",
+            "name": "Google Gemini Chat Model",
+            "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+            "typeVersion": 1.1,
+            "position": [
+                460,
+                100
+            ]
+        },
+        {
+            "parameters": {
+                "sessionIdType": "customKey",
+                "sessionKey": "={{ $('Webhook').item.json.body.sessionId || 'default-session' }}",
+                "contextWindowLength": 10
+            },
+            "id": "d1a2b3c4-4444-4444-8444-444444444444",
+            "name": "Window Buffer Memory",
+            "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+            "typeVersion": 1.3,
+            "position": [
+                680,
+                100
+            ]
+        },
+        {
+            "parameters": {
+                "name": "faq_search",
+                "description": "Search the FAQ knowledge base for answers about store policies, shipping, returns, sizing, payment methods, and general store information. Use this tool when a customer asks questions about how the store works.",
+                "topK": 3,
+                "options": {
+                    "scoreThreshold": 0.6
+                }
+            },
+            "id": "d1a2b3c4-5555-4555-8555-555555555555",
+            "name": "FAQ Tool",
+            "type": "@n8n/n8n-nodes-langchain.retrieverVectorStore",
+            "typeVersion": 1,
+            "position": [
+                680,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "qdrantCollection": "faqs",
+                "options": {}
+            },
+            "id": "d1a2b3c4-6666-4666-8666-666666666666",
+            "name": "Qdrant Vector Store",
+            "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+            "typeVersion": 1,
+            "position": [
+                900,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "model": "models/text-embedding-004",
+                "options": {}
+            },
+            "id": "d1a2b3c4-7777-4777-8777-777777777777",
+            "name": "Embeddings Google Gemini",
+            "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+            "typeVersion": 1,
+            "position": [
+                900,
+                480
+            ]
+        },
+        {
+            "parameters": {
+                "jsCode": "// Format and return the agent response\nconst agentResponse = $input.item.json;\n\n// Extract the response\nlet answer = agentResponse.output || agentResponse.text || 'I had trouble processing that. Could you try again?';\n\nconst question = $('Webhook').item.json.body.question;\nconst sessionId = $('Webhook').item.json.body.sessionId || 'anonymous';\n\nreturn {\n  success: true,\n  output: answer,\n  question: question,\n  sessionId: sessionId,\n  timestamp: new Date().toISOString(),\n  agent: 'clothymax-support'\n};"
+            },
+            "id": "d1a2b3c4-8888-4888-8888-888888888888",
+            "name": "Format Response",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                680,
+                480
+            ]
+        }
+    ],
+    "connections": {
+        "Webhook": {
+            "main": [
+                [
+                    {
+                        "node": "AI Agent",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "AI Agent": {
+            "main": [
+                [
+                    {
+                        "node": "Format Response",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Google Gemini Chat Model": {
+            "ai_languageModel": [
+                [
+                    {
+                        "node": "AI Agent",
+                        "type": "ai_languageModel",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Window Buffer Memory": {
+            "ai_memory": [
+                [
+                    {
+                        "node": "AI Agent",
+                        "type": "ai_memory",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "FAQ Tool": {
+            "ai_tool": [
+                [
+                    {
+                        "node": "AI Agent",
+                        "type": "ai_tool",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Qdrant Vector Store": {
+            "ai_vectorStore": [
+                [
+                    {
+                        "node": "FAQ Tool",
+                        "type": "ai_vectorStore",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Embeddings Google Gemini": {
+            "ai_embedding": [
+                [
+                    {
+                        "node": "Qdrant Vector Store",
+                        "type": "ai_embedding",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    },
+    "pinData": {},
+    "settings": {
+        "executionOrder": "v1"
+    },
+    "staticData": null,
+    "tags": [],
+    "triggerCount": 1,
+    "updatedAt": "2026-02-09T00:00:00.000Z",
+    "versionId": "1"
+}

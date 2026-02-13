@@ -1,0 +1,331 @@
+{
+    "name": "Order Status Agent",
+    "nodes": [
+        {
+            "parameters": {
+                "httpMethod": "POST",
+                "path": "order-status",
+                "responseMode": "lastNode",
+                "options": {}
+            },
+            "id": "e1a2b3c4-1111-5111-9111-111111111111",
+            "name": "Webhook",
+            "type": "n8n-nodes-base.webhook",
+            "typeVersion": 2,
+            "position": [
+                240,
+                300
+            ],
+            "webhookId": "order-status-lookup"
+        },
+        {
+            "parameters": {
+                "jsCode": "// Extract order lookup parameters from request\nconst body = $input.item.json.body;\n\n// Get the query from the question\nconst query = body.question || body.query || '';\n\n// Try to extract order number (formats: #1001, 1001, ORD-1001)\nconst orderNumMatch = query.match(/(?:#|ORD-?)?([0-9]{4,})/i);\nlet orderNumber = orderNumMatch ? orderNumMatch[1] : null;\n\n// Try to extract email\nconst emailMatch = query.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}/i);\nlet email = emailMatch ? emailMatch[0] : null;\n\n// If not in query, check explicit fields\nif (!orderNumber && body.orderNumber) {\n  orderNumber = body.orderNumber.toString().replace(/[^0-9]/g, '');\n}\nif (!email && body.email) {\n  email = body.email;\n}\n\nreturn {\n  json: {\n    orderNumber: orderNumber,\n    email: email,\n    hasOrderNumber: !!orderNumber,\n    hasEmail: !!email,\n    originalQuery: query,\n    sessionId: body.sessionId || 'anonymous'\n  }\n};"
+            },
+            "id": "e1a2b3c4-2222-5222-9222-222222222222",
+            "name": "Parse Order Request",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                460,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "conditions": {
+                    "boolean": [
+                        {
+                            "value1": "={{ $json.hasOrderNumber }}",
+                            "value2": true
+                        }
+                    ]
+                }
+            },
+            "id": "e1a2b3c4-3333-5333-9333-333333333333",
+            "name": "Has Order Number?",
+            "type": "n8n-nodes-base.if",
+            "typeVersion": 2,
+            "position": [
+                680,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "method": "GET",
+                "url": "=https://clothymax.myshopify.com/admin/api/2024-01/orders.json",
+                "authentication": "genericCredentialType",
+                "genericAuthType": "httpHeaderAuth",
+                "sendQuery": true,
+                "queryParameters": {
+                    "parameters": [
+                        {
+                            "name": "name",
+                            "value": "={{ '#' + $json.orderNumber }}"
+                        },
+                        {
+                            "name": "status",
+                            "value": "any"
+                        }
+                    ]
+                },
+                "options": {
+                    "timeout": 10000
+                }
+            },
+            "id": "e1a2b3c4-4444-5444-9444-444444444444",
+            "name": "Lookup Order by Number",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.2,
+            "position": [
+                900,
+                200
+            ],
+            "credentials": {
+                "httpHeaderAuth": {
+                    "id": "shopify-header-auth",
+                    "name": "Shopify Header Auth"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "conditions": {
+                    "boolean": [
+                        {
+                            "value1": "={{ $('Parse Order Request').item.json.hasEmail }}",
+                            "value2": true
+                        }
+                    ]
+                }
+            },
+            "id": "e1a2b3c4-5555-5555-9555-555555555555",
+            "name": "Has Email?",
+            "type": "n8n-nodes-base.if",
+            "typeVersion": 2,
+            "position": [
+                680,
+                500
+            ]
+        },
+        {
+            "parameters": {
+                "method": "GET",
+                "url": "=https://clothymax.myshopify.com/admin/api/2024-01/orders.json",
+                "authentication": "genericCredentialType",
+                "genericAuthType": "httpHeaderAuth",
+                "sendQuery": true,
+                "queryParameters": {
+                    "parameters": [
+                        {
+                            "name": "email",
+                            "value": "={{ $('Parse Order Request').item.json.email }}"
+                        },
+                        {
+                            "name": "status",
+                            "value": "any"
+                        },
+                        {
+                            "name": "limit",
+                            "value": "5"
+                        }
+                    ]
+                },
+                "options": {
+                    "timeout": 10000
+                }
+            },
+            "id": "e1a2b3c4-6666-5666-9666-666666666666",
+            "name": "Lookup Orders by Email",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.2,
+            "position": [
+                900,
+                400
+            ],
+            "credentials": {
+                "httpHeaderAuth": {
+                    "id": "shopify-header-auth",
+                    "name": "Shopify Header Auth"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "jsCode": "// No order identifier provided\nreturn {\n  json: {\n    success: false,\n    error: 'no_identifier',\n    message: \"I couldn't find an order number or email in your message. Could you please provide your order number (like #1001) or the email address you used when placing the order?\",\n    sessionId: $('Parse Order Request').item.json.sessionId\n  }\n};"
+            },
+            "id": "e1a2b3c4-7777-5777-9777-777777777777",
+            "name": "No Identifier Response",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                900,
+                600
+            ]
+        },
+        {
+            "parameters": {
+                "jsCode": "// Format order status response\nconst orders = $input.item.json.orders || [];\nconst originalQuery = $('Parse Order Request').item.json.originalQuery;\nconst sessionId = $('Parse Order Request').item.json.sessionId;\n\nif (!orders || orders.length === 0) {\n  return {\n    json: {\n      success: false,\n      error: 'order_not_found',\n      message: \"I couldn't find any orders matching that information. Please double-check your order number or email address. If you just placed an order, it may take a few minutes to appear in our system.\",\n      sessionId: sessionId\n    }\n  };\n}\n\n// Format order(s) for display\nconst formattedOrders = orders.map(order => {\n  // Determine status message\n  let statusMessage = '';\n  let emoji = '';\n  \n  if (order.cancelled_at) {\n    statusMessage = 'Cancelled';\n    emoji = '❌';\n  } else if (order.fulfillment_status === 'fulfilled') {\n    statusMessage = 'Delivered';\n    emoji = '✅';\n  } else if (order.fulfillment_status === 'partial') {\n    statusMessage = 'Partially Shipped';\n    emoji = '📦';\n  } else if (order.financial_status === 'paid') {\n    statusMessage = 'Processing';\n    emoji = '⏳';\n  } else if (order.financial_status === 'pending') {\n    statusMessage = 'Payment Pending';\n    emoji = '💳';\n  } else {\n    statusMessage = 'In Progress';\n    emoji = '📋';\n  }\n  \n  // Get tracking info if available\n  let trackingInfo = null;\n  if (order.fulfillments && order.fulfillments.length > 0) {\n    const fulfillment = order.fulfillments[0];\n    if (fulfillment.tracking_number) {\n      trackingInfo = {\n        number: fulfillment.tracking_number,\n        url: fulfillment.tracking_url,\n        company: fulfillment.tracking_company\n      };\n    }\n  }\n  \n  // Format items\n  const items = order.line_items.map(item => ({\n    name: item.title,\n    quantity: item.quantity,\n    variant: item.variant_title\n  }));\n  \n  return {\n    orderNumber: order.name,\n    orderDate: new Date(order.created_at).toLocaleDateString('en-US', { \n      year: 'numeric', month: 'long', day: 'numeric' \n    }),\n    status: statusMessage,\n    emoji: emoji,\n    total: order.total_price + ' ' + order.currency,\n    items: items,\n    itemCount: items.reduce((sum, item) => sum + item.quantity, 0),\n    tracking: trackingInfo,\n    shippingAddress: order.shipping_address ? {\n      city: order.shipping_address.city,\n      country: order.shipping_address.country\n    } : null\n  };\n});\n\n// Generate natural language response\nlet response = '';\nif (formattedOrders.length === 1) {\n  const o = formattedOrders[0];\n  response = `${o.emoji} Order ${o.orderNumber} (${o.orderDate})\\n\\n`;\n  response += `Status: ${o.status}\\n`;\n  response += `Total: ${o.total}\\n`;\n  response += `Items: ${o.items.map(i => `${i.quantity}x ${i.name}`).join(', ')}\\n`;\n  \n  if (o.tracking) {\n    response += `\\nTracking: ${o.tracking.company} - ${o.tracking.number}`;\n    if (o.tracking.url) {\n      response += ` (${o.tracking.url})`;\n    }\n  }\n} else {\n  response = `I found ${formattedOrders.length} orders for you:\\n\\n`;\n  formattedOrders.forEach((o, i) => {\n    response += `${i + 1}. ${o.emoji} ${o.orderNumber} - ${o.status} (${o.total})\\n`;\n  });\n  response += '\\nWould you like details on a specific order?';\n}\n\nreturn {\n  json: {\n    success: true,\n    message: response,\n    orders: formattedOrders,\n    orderCount: formattedOrders.length,\n    sessionId: sessionId\n  }\n};"
+            },
+            "id": "e1a2b3c4-8888-5888-9888-888888888888",
+            "name": "Format Order Response",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                1120,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "mode": "chooseBranch"
+            },
+            "id": "e1a2b3c4-9999-5999-9999-999999999999",
+            "name": "Merge Responses",
+            "type": "n8n-nodes-base.merge",
+            "typeVersion": 3,
+            "position": [
+                1340,
+                400
+            ]
+        },
+        {
+            "parameters": {
+                "jsCode": "// Final response formatting for webhook\nconst result = $input.item.json;\n\nreturn {\n  success: result.success,\n  output: result.message,\n  orders: result.orders || [],\n  orderCount: result.orderCount || 0,\n  sessionId: result.sessionId,\n  timestamp: new Date().toISOString(),\n  agent: 'order-status'\n};"
+            },
+            "id": "e1a2b3c4-aaaa-5aaa-9aaa-aaaaaaaaaaaa",
+            "name": "Format Final Response",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                1560,
+                400
+            ]
+        }
+    ],
+    "connections": {
+        "Webhook": {
+            "main": [
+                [
+                    {
+                        "node": "Parse Order Request",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Parse Order Request": {
+            "main": [
+                [
+                    {
+                        "node": "Has Order Number?",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Has Order Number?": {
+            "main": [
+                [
+                    {
+                        "node": "Lookup Order by Number",
+                        "type": "main",
+                        "index": 0
+                    }
+                ],
+                [
+                    {
+                        "node": "Has Email?",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Lookup Order by Number": {
+            "main": [
+                [
+                    {
+                        "node": "Format Order Response",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Has Email?": {
+            "main": [
+                [
+                    {
+                        "node": "Lookup Orders by Email",
+                        "type": "main",
+                        "index": 0
+                    }
+                ],
+                [
+                    {
+                        "node": "No Identifier Response",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Lookup Orders by Email": {
+            "main": [
+                [
+                    {
+                        "node": "Format Order Response",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Format Order Response": {
+            "main": [
+                [
+                    {
+                        "node": "Merge Responses",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "No Identifier Response": {
+            "main": [
+                [
+                    {
+                        "node": "Merge Responses",
+                        "type": "main",
+                        "index": 1
+                    }
+                ]
+            ]
+        },
+        "Merge Responses": {
+            "main": [
+                [
+                    {
+                        "node": "Format Final Response",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    },
+    "pinData": {},
+    "settings": {
+        "executionOrder": "v1"
+    },
+    "staticData": null,
+    "tags": [],
+    "triggerCount": 1,
+    "updatedAt": "2026-02-09T00:00:00.000Z",
+    "versionId": "1"
+}

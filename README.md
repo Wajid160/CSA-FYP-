@@ -1,223 +1,168 @@
-# Customer Support Agent - FYP Project
+# Autonomous AI Customer Support Agent (CSA) for E-commerce
 
-> **An autonomous AI agent for clothing e-commerce customer support**  
-> Final Year Project | Started: February 2, 2026
+> **Final Year Project (FYP) | 2026**
+> An intelligent, autonomous agent that transforms customer support for clothing brands using Multi-Agent Architecture and Retrieval-Augmented Generation (RAG).
 
-## 🎯 Project Vision
-
-Build a **living autonomous AI agent** that handles all customer support tasks for a clothing web store with full access and capabilities - not just a traditional chatbot.
-
-## ✨ Key Features
-
-- 🤖 **Autonomous Decision Making** (up to $100 threshold)
-- 🔍 **Intelligent Product Search** with semantic understanding
-- 📦 **Order Management** (tracking, modifications, cancellations)
-- 💰 **Returns & Refunds** processing
-- 🌍 **Multilingual Support** (English, Urdu, auto-detect)
-- 🧠 **Conversation Memory** with context awareness
-- 🎨 **Style Recommendations** based on preferences
-- 📧 **Proactive Engagement** (abandoned carts, follow-ups)
-- 🎤 **Voice Support** (future phase)
-
-## 🛠️ Tech Stack
-
-| Component | Technology | Free Tier |
-|-----------|-----------|-----------|
-| **LLM** | Gemini 3 Flash | ✅ |
-| **Backend** | N8N Multi-Agent | ✅ (self-hosted) |
-| **Database** | PostgreSQL (Supabase) | ✅ 10GB |
-| **Vector DB** | Qdrant Cloud | ✅ 1M vectors |
-| **E-commerce** | Shopify Custom App | ✅ Partner |
-| **Chat UI** | React + Shopify Bridge | - |
-| **Admin** | Next.js | - |
-| **Embeddings** | Google Embedding API | ✅ 20K/min |
-
-## 📁 Project Structure
-
-```
-My FYP (CSA)/
-├── .agent/                 # Project documentation & skills
-│   ├── README.md          # Project overview
-│   └── skills/
-│       └── csa_context/   # Master context skill
-├── n8n-workflows/         # N8N agent workflows
-├── shopify-app/           # Shopify custom app
-├── chat-widget/           # React chat interface
-├── admin-dashboard/       # Next.js admin panel
-├── database/              # Schemas and migrations
-│   ├── schemas/
-│   └── migrations/
-├── docs/                  # Documentation
-├── tests/                 # Test scenarios
-├── .env.example          # Environment template
-└── README.md             # This file
-```
-
-## 🚀 Development Phases
-
-### Phase 1: MVP - Read-Only Agent (1 week) 🔄
-- [x] Project setup and research
-- [ ] Product search & recommendations
-- [ ] FAQ answering (RAG)
-- [ ] Order status lookup
-- [ ] Inventory checking
-
-### Phase 2: Autonomous Actions
-- [ ] Auto-approve returns (<$100)
-- [ ] Send discount codes
-- [ ] Modify orders
-- [ ] Process refunds
-
-### Phase 3: Proactive Features
-- [ ] Abandoned cart recovery
-- [ ] Post-purchase follow-ups
-- [ ] Personalized recommendations
-
-### Phase 4: Voice Capabilities
-- [ ] Speech-to-Text integration
-- [ ] Text-to-Speech responses
-- [ ] Live voice chat
-
-### Phase 5: Admin Dashboard
-- [ ] Real-time monitoring
-- [ ] Analytics & metrics
-- [ ] Human takeover
-- [ ] Agent training
-
-## 🏗️ Architecture
-
-### Multi-Agent System
-```
-Main Orchestrator Agent
-├── Product Search Agent (semantic search + filtering)
-├── Order Management Agent (CRUD operations)
-├── Returns/Refunds Agent (autonomous <$100)
-└── Style Recommendation Agent (personalization)
-```
-
-### Memory Strategy
-- **PostgreSQL**: Long-term conversation history
-- **Redis**: Real-time session context
-- **Qdrant**: RAG knowledge base (products, FAQs, policies)
-
-## 🔧 Setup Instructions
-
-### Prerequisites
-- Node.js 18+ and npm
-- PostgreSQL (via Supabase)
-- N8N instance (self-hosted or cloud)
-- Shopify Partner account
-- Google AI API access
-
-### Installation
-
-1. **Clone and setup**
-   ```bash
-   cd "C:\Users\wajid\Desktop\My FYP (CSA)"
-   cp .env.example .env
-   # Edit .env with your API keys
-   ```
-
-2. **Set up Supabase**
-   - Create project at supabase.com
-   - Copy connection details to `.env`
-   - Run database migrations
-
-3. **Set up Qdrant**
-   - Create cluster at qdrant.tech
-   - Copy API key and URL to `.env`
-
-4. **Configure Shopify**
-   - Join Shopify Partner Program
-   - Create/modify custom app
-   - Set up OAuth scopes
-
-5. **Set up N8N**
-   - Install N8N (self-hosted or cloud trial)
-   - Import workflows from `n8n-workflows/`
-   - Configure Gemini credentials
-
-### Running the Project
-
-```bash
-# Start N8N
-n8n start
-
-# Start chat widget (development)
-cd chat-widget
-npm install
-npm run dev
-
-# Start admin dashboard
-cd admin-dashboard
-npm install
-npm run dev
-```
-
-## 📊 Key Metrics
-
-- **Auto-Resolution Rate**: Target 80%+
-- **Response Time**: < 2 seconds
-- **Customer Satisfaction**: Thumbs up/down feedback
-- **Escalation Rate**: Monitor human intervention needs
-
-## 🧪 Testing
-
-50+ comprehensive test scenarios covering:
-- Product search accuracy
-- Order management flows
-- Return/refund processing
-- Multilingual conversations
-- Edge cases and error handling
-
-```bash
-# Run tests
-cd tests
-npm test
-```
-
-## 📚 Documentation
-
-- [Architecture Guide](docs/architecture.md) *(TBD)*
-- [API Reference](docs/api-reference.md) *(TBD)*
-- [Database Schema](docs/database-schema.md) *(TBD)*
-- [N8N Workflows](docs/n8n-workflows.md) *(TBD)*
-- [Deployment Guide](docs/deployment.md) *(TBD)*
-
-## 🎓 Academic Deliverables
-
-- ✅ **Code**: GitHub repository
-- ✅ **Documentation**: Complete technical docs
-- ✅ **Demo**: Live demonstration
-- ✅ **Presentation**: Project presentation
-- ✅ **Report**: FYP final report
-
-## 🔐 Free Tier Limits
-
-| Service | Limit | Usage Strategy |
-|---------|-------|----------------|
-| Gemini 3 | *TBD* | Optimize prompts |
-| Supabase | 10GB storage | Efficient schemas |
-| Qdrant | 1M vectors | Selective embedding |
-| Shopify | Unlimited dev stores | Development only |
-| ElevenLabs | 10K chars/month | Phase 4 only |
-
-## 🤝 Contributing
-
-This is an academic FYP project. Feedback and suggestions welcome!
-
-## 📄 License
-
-MIT License (for academic purposes)
-
-## 👨‍💻 Author
-
-**Wajid** - Final Year Project  
-Computer Science Student  
-*Building autonomous AI agents for e-commerce*
+![Project Status](https://img.shields.io/badge/Status-Completed-success)
+![Tech Stack](https://img.shields.io/badge/Stack-N8N%20%7C%20Gemini%20%7C%20Supabase%20%7C%20Qdrant-blue)
+![License](https://img.shields.io/badge/License-MIT-green)
 
 ---
 
-**Last Updated**: February 2, 2026  
-**Status**: Phase 1 - Initial Setup & Research  
-**Next Milestone**: Complete N8N workflow setup
+## 📖 Project Overview
+
+This project is a fully autonomous AI agent designed to handle end-to-end customer support for e-commerce platforms (specifically Shopify). Unlike traditional rule-based chatbots, this agent "thinks" and takes actions. It can search for products with semantic understanding, check real-time inventory, manage orders, process returns, and answer policy questions using your specific business knowledge.
+
+### ✨ Key Capabilities
+
+- **🧠 Intelligent Reasoning**: Uses **Google Gemini 3 Flash** to understand complex user intent and context.
+- **🛍️ Semantic Product Search**: Finds "red summer dress under $50" using **Qdrant** vector search, not just keyword matching.
+- **📦 Autonomous Order Management**: Can look up orders, check status, and even process refunds autonomously (under a set dollar threshold).
+- **📚 RAG Knowledge Base**: Instantly answers FAQs about shipping, returns, and sizing by retrieving relevant policy documents.
+- **💬 Human-Like Conversation**: Maintains long-term memory of customer interactions using **PostgreSQL** and **Redis** strategies.
+- **🔌 Shopify Integration**: Deep integration with Shopify API for real-time data on products, customers, and orders.
+
+---
+
+## 🏗️ System Architecture
+
+The project follows a **Multi-Agent Orchestration** pattern built on N8N. A central "Orchestrator Agent" routes user requests to specialized sub-agents.
+
+```mermaid
+graph TD
+    User[Customer] -->|Chat Widget| Webhook[N8N Webhook]
+    Webhook --> Orchestrator[🤖 Orchestrator Agent]
+    
+    Orchestrator -->|Intent: Product| ProductAgent[🛍️ Product Search Agent]
+    Orchestrator -->|Intent: Order| OrderAgent[📦 Order Status Agent]
+    Orchestrator -->|Intent: FAQ| FAQAgent[📚 FAQ/Policy Agent]
+    Orchestrator -->|Intent: Return| ReturnAgent[💸 Returns Agent]
+    
+    ProductAgent -->|Vector Search| Qdrant[(Qdrant Vector DB)]
+    ProductAgent -->|Inventory| Shopify[Shopify API]
+    
+    OrderAgent -->|Order Data| Shopify
+    
+    FAQAgent -->|Embeddings| Qdrant
+    
+    Orchestrator -->|Memory| DB[(Supabase PostgreSQL)]
+    
+    subgraph "AI Brain"
+        Gemini[Google Gemini 3 Flash]
+    end
+    
+    Orchestrator -.-> Gemini
+    ProductAgent -.-> Gemini
+    FAQAgent -.-> Gemini
+```
+
+---
+
+## 🛠️ Technology Stack
+
+| Component | Technology | Role |
+|-----------|------------|------|
+| **LLM** | **Google Gemini 3 Flash** | Core reasoning & response generation |
+| **Orchestration** | **N8N** | Workflow automation & agent routing |
+| **Vector DB** | **Qdrant Cloud** | Storing product & FAQ embeddings for RAG |
+| **Database** | **Supabase (PostgreSQL)** | Conversation history & customer data |
+| **Embedding** | **Google text-embedding-004** | Generating vector embeddings |
+| **E-commerce** | **Shopify** | Product catalog & order management platform |
+| **Frontend** | **HTML/JS/CSS** | Embedding chat widget for Shopify storefront |
+
+---
+
+## 📂 Repository Structure
+
+```
+My FYP (CSA)/
+├── .agent/                 # Agent skills & context
+├── chat-widget/            # Frontend chat widget (Vanilla JS/CSS)
+│   ├── index.html          # Local testing file
+│   ├── widget.js           # Widget logic
+│   └── widget.css          # Widget styling
+├── database/               # Database management
+│   ├── migrations/         # Supabase SQL schemas
+│   └── scripts/            # Node.js scripts for seeding & syncing
+├── docs/                   # Detailed documentation
+│   ├── architecture.md     # System architecture deep-dive
+│   ├── database-schema.md  # SQL schema reference
+│   └── setup-guide.md      # Full setup walkthrough
+├── n8n-workflows/          # Exported N8N workflow JSONs
+│   ├── orchestrator-agent.json
+│   ├── product-search.json
+│   └── faq-agent.json
+└── README.md               # This file
+```
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js 18+
+- N8N (Self-hosted or Cloud)
+- Supabase Account
+- Qdrant Cloud Account
+- Google AI Studio API Key (Gemini)
+
+### 1. Clone & Setup
+```bash
+git clone https://github.com/Wajid160/CSA-FYP-.git
+cd "CSA-FYP-"
+npm install
+```
+
+### 2. Configure Environment
+Rename `.env.example` to `.env` and add your API keys:
+```bash
+cp .env.example .env
+# Edit .env with your credentials for Supabase, Qdrant, Gemini, etc.
+```
+
+### 3. Database Setup
+Run the SQL migrations in your Supabase SQL editor from `database/migrations/001_initial_schema.sql`.
+
+### 4. Seed Knowledge Base
+```bash
+# detailed instructions in docs/setup-guide.md
+npm run setup:qdrant   # Create vector collections
+npm run setup:faqs     # Upload FAQ embeddings
+npm run sync:products  # Sync Shopify products to Qdrant
+```
+
+### 5. Import N8N Workflows
+Import the JSON files from `n8n-workflows/` into your N8N instance and configure the credentials (see `docs/n8n-ai-agent-connections-guide.md`).
+
+---
+
+## 🧪 Testing
+
+You can test the system locally using the chat widget:
+1. Open `chat-widget/index.html` in your browser.
+2. Ensure your N8N webhook URL is updated in `chat-widget/widget.js`.
+3. Start chatting!
+
+**Example queries:**
+- *"Do you have any red hoodies?"* (Product Search)
+- *"Where is my order #1001?"* (Order Status)
+- *"What is your return policy?"* (RAG FAQ)
+
+---
+
+## 📄 Documentation
+
+- [**Setup Guide**](docs/setup-guide.md): Step-by-step installation instructions.
+- [**Architecture**](docs/architecture.md): Technical deep-dive.
+- [**Database Schema**](docs/database-schema.md): ERD and table definitions.
+
+---
+
+## 👨‍💻 Author
+
+**Wajid**  
+Computer Science Final Year Project  
+*Building the future of autonomous e-commerce support.*
+
+---
+*License: MIT*

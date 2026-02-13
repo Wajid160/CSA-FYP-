@@ -1,0 +1,125 @@
+/* ============================================
+   CLOTHYMAX - PREMIUM DAWN THEME STYLING
+   Copy this entire code into:
+   Shopify Admin → Online Store → Themes → Customize
+   → Theme Settings → Custom CSS
+   ============================================ */
+
+/* === TYPOGRAPHY === */
+h1, h2, h3, h4, .section-header__title {
+  letter-spacing: 0.05em;
+  font-weight: 500;
+}
+
+/* === PREMIUM BUTTONS === */
+.button, .shopify-payment-button__button {
+  border-radius: 0 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* === PRODUCT CARD HOVER EFFECT === */
+.card-wrapper {
+  transition: transform 0.3s ease;
+}
+
+.card-wrapper:hover {
+  transform: translateY(-5px);
+}
+
+.card__media {
+  overflow: hidden;
+}
+
+.card__media img {
+  transition: transform 0.5s ease;
+}
+
+.card-wrapper:hover .card__media img {
+  transform: scale(1.08);
+}
+
+/* === ANNOUNCEMENT BAR === */
+.announcement-bar {
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  font-size: 11px;
+}
+
+/* === HEADER === */
+.header {
+  border-bottom: 1px solid #eee;
+}
+
+.header__menu-item {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 13px;
+}
+
+/* === SMOOTH SCROLLING === */
+html {
+  scroll-behavior: smooth;
+}
+
+/* === FOOTER POLISH === */
+.footer {
+  border-top: 1px solid #eee;
+}
+
+/* === COLLECTION PAGE === */
+.collection-hero {
+  margin-bottom: 2rem;
+}
+
+/* === PRODUCT PAGE === */
+.product__title {
+  letter-spacing: 0.02em;
+}
+
+/* === ADD TO CART ANIMATION === */
+.product-form__submit:active {
+  transform: scale(0.98);
+}
+
+/* === IMAGE LOADING === */
+.media img {
+  transition: opacity 0.3s ease;
+}
+
+/* === SALE BADGE === */
+.badge--sale {
+  background: #000 !important;
+  color: #fff !important;
+  border-radius: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* === LINKS === */
+a {
+  transition: color 0.2s ease;
+}
+
+/* === NEWSLETTER SECTION === */
+.newsletter-form__field-wrapper {
+  border-radius: 0;
+}
+
+/* === MOBILE OPTIMIZATION === */
+@media screen and (max-width: 749px) {
+  .button {
+    padding: 12px 24px;
+  }
+  
+  h1 {
+    font-size: 28px;
+  }
+}

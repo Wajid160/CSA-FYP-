@@ -4,11 +4,7 @@
   "description": "Autonomous AI Customer Support Agent for Clothing E-commerce Store",
   "main": "index.js",
   "scripts": {
-    "test": "node test-all.js",
-    "test:gemini": "node test-gemini.js",
-    "test:db": "node test-db.js",
-    "test:qdrant": "node test-qdrant.js",
-    "test:shopify": "node test-shopify.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
     "setup:qdrant": "node database/scripts/create-qdrant-collections.js",
     "setup:faqs": "node database/scripts/generate-faq-embeddings.js",
     "sync:products": "node database/scripts/sync-shopify-products.js"
