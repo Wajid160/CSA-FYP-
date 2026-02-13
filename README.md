@@ -22,6 +22,13 @@ This project is a fully autonomous AI agent designed to handle end-to-end custom
 - **💬 Human-Like Conversation**: Maintains long-term memory of customer interactions using **PostgreSQL** and **Redis** strategies.
 - **🔌 Shopify Integration**: Deep integration with Shopify API for real-time data on products, customers, and orders.
 
+### 📸 Projec Results
+
+| **Voice Interaction** | **Text Interaction** |
+|:---:|:---:|
+| ![Voice Result](docs/screenshots/result-voice.png) | ![Text Result](docs/screenshots/result-text.png) |
+| *Seamless voice-enabled support* | *Rich text & product cards* |
+
 ---
 
 ## 🏗️ System Architecture
