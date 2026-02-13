@@ -26,35 +26,9 @@ This project is a fully autonomous AI agent designed to handle end-to-end custom
 
 ## 🏗️ System Architecture
 
-The project follows a **Multi-Agent Orchestration** pattern built on N8N. A central "Orchestrator Agent" routes user requests to specialized sub-agents.
+The project now uses a **Single Unified Workflow** in N8N that handles all agent capabilities (Orchestration, Product Search, Order Status, FAQs, Returns) in one robust pipeline.
 
-```mermaid
-graph TD
-    User[Customer] -->|Chat Widget| Webhook[N8N Webhook]
-    Webhook --> Orchestrator[🤖 Orchestrator Agent]
-    
-    Orchestrator -->|Intent: Product| ProductAgent[🛍️ Product Search Agent]
-    Orchestrator -->|Intent: Order| OrderAgent[📦 Order Status Agent]
-    Orchestrator -->|Intent: FAQ| FAQAgent[📚 FAQ/Policy Agent]
-    Orchestrator -->|Intent: Return| ReturnAgent[💸 Returns Agent]
-    
-    ProductAgent -->|Vector Search| Qdrant[(Qdrant Vector DB)]
-    ProductAgent -->|Inventory| Shopify[Shopify API]
-    
-    OrderAgent -->|Order Data| Shopify
-    
-    FAQAgent -->|Embeddings| Qdrant
-    
-    Orchestrator -->|Memory| DB[(Supabase PostgreSQL)]
-    
-    subgraph "AI Brain"
-        Gemini[Google Gemini 3 Flash]
-    end
-    
-    Orchestrator -.-> Gemini
-    ProductAgent -.-> Gemini
-    FAQAgent -.-> Gemini
-```
+![N8N Workflow Diagram](n8n-workflows/workflow-diagram.png)
 
 ---
 
@@ -88,10 +62,9 @@ My FYP (CSA)/
 │   ├── architecture.md     # System architecture deep-dive
 │   ├── database-schema.md  # SQL schema reference
 │   └── setup-guide.md      # Full setup walkthrough
-├── n8n-workflows/          # Exported N8N workflow JSONs
-│   ├── orchestrator-agent.json
-│   ├── product-search.json
-│   └── faq-agent.json
+├── n8n-workflows/          # N8N Workflows
+│   ├── main-workflow.json  # ✅ MAIN WORKFLOW (Import this)
+│   └── workflow-diagram.png
 └── README.md               # This file
 ```
 
@@ -132,7 +105,7 @@ npm run sync:products  # Sync Shopify products to Qdrant
 ```
 
 ### 5. Import N8N Workflows
-Import the JSON files from `n8n-workflows/` into your N8N instance and configure the credentials (see `docs/n8n-ai-agent-connections-guide.md`).
+Import `n8n-workflows/main-workflow.json` into your N8N instance. This single file contains the entire agent logic. Configure credentials as described in `docs/setup-guide.md`.
 
 ---
 

@@ -1,0 +1,493 @@
+{
+  "name": "ClothyMax Support Agent - Production Ready",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "orchestrator",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        64,
+        1088
+      ],
+      "id": "8c00c2c8-8835-4cbc-aed2-fa0830eb2310",
+      "name": "Webhook Entry Point",
+      "webhookId": "clothymax-orchestrator-v2"
+    },
+    {
+      "parameters": {
+        "options": {
+          "maxOutputTokens": 3000,
+          "temperature": 0.3
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        288,
+        1312
+      ],
+      "id": "806412c4-a638-4bbf-bd33-b5c50e77340c",
+      "name": "Gemini Primary",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "kiSxxa7eJL1oJxuD",
+          "name": "M1"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "maxOutputTokens": 3000,
+          "temperature": 0.3
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        416,
+        1312
+      ],
+      "id": "3f593037-3fcd-4417-9460-58ce41379394",
+      "name": "Gemini Fallback",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "tzQ8ryLxx9HYHyUt",
+          "name": "M2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.body.question }}",
+        "needsFallback": true,
+        "options": {
+          "systemMessage": "=# TECHNICAL EXECUTION PROTOCOL (INTERNAL OVERRIDE) - MANDATORY TOOL USAGE\n\n**CRITICAL RULES - READ FIRST:**\n- You have NO internal knowledge of ClothyMax policies.\n- You are FORBIDDEN from answering questions about returns, shipping, sizing, or payments using your own memory.\n- If a user asks a question related to store info, you MUST execute the 'FAQ Knowledge Base' tool before generating any text.\n- If you provide a policy answer without calling the tool, you have failed your programming.\n\n---\n\nYou are Customer Support Agent, the AI shopping assistant for ClothyMax - Pakistan's premier online fashion destination.\n\n## Your Personality\n- Warm, friendly, and culturally aware of Pakistani fashion\n- Expert in women's and men's clothing, styles, and trends\n- Professional yet conversational\n- Patient and helpful\n- Natural speaker (optimized for voice)\n\n## Conversational Style\n- Greet warmly: \"Assalam-o-Alaikum! How can I help you today?\" or \"Hello! Welcome to ClothyMax!\"\n- Keep responses concise: 2-3 sentences for simple queries\n- Use natural fillers: \"Let me check that for you\", \"Great choice!\", \"One moment\"\n- Never speak more than 3 sentences without asking if they want more details\n\n---\n\n## TOOL USAGE DECISION TREE (FOLLOW STRICTLY)\n\n**STEP 1: Analyze the user's message**\n**STEP 2: Match against triggers below**\n**STEP 3: Call the appropriate tool IMMEDIATELY**\n**STEP 4: Only respond after receiving tool results**\n\n---\n\n## Available Tools\n\n### 1. product_search\n\n**MANDATORY CALL IF:**\n- User mentions clothing items (dress, shirt, kurta, pants, suit, etc.)\n- User mentions colors (blue, red, black, white, etc.)\n- User mentions occasions (wedding, party, casual, formal, office, etc.)\n- User mentions shopping intent (\"show me\", \"looking for\", \"find\", \"need\", \"want to buy\", \"searching for\")\n- User mentions categories (men's wear, women's wear, kids wear)\n- User mentions price ranges (\"under 5000\", \"affordable\", \"budget\")\n- User asks \"what do you have\", \"do you sell\", \"any recommendations\"\n\n**Examples that REQUIRE product_search:**\n- \"I need a blue dress for a wedding\" → CALL product_search\n- \"Show me casual shirts for men\" → CALL product_search\n- \"Do you have party wear under 5000?\" → CALL product_search\n- \"What dresses do you have?\" → CALL product_search\n- \"Looking for something formal\" → CALL product_search\n\n**Parameters to pass:**\n- Query: Combine all relevant details from user message\n- Example: \"blue formal dress wedding under 5000\"\n\n---\n\n### 2. faq_tool (FAQ Knowledge Base)\n\n**MANDATORY CALL IF user asks about:**\n- **Shipping:** \"delivery\", \"shipping\", \"how long\", \"when will it arrive\", \"tracking\"\n- **Returns:** \"return\", \"refund\", \"exchange\", \"cancel order\"\n- **Payment:** \"payment methods\", \"cash on delivery\", \"COD\", \"JazzCash\", \"Easypaisa\", \"card\"\n- **Sizing:** \"size guide\", \"measurements\", \"what size\", \"fit\", \"sizing chart\"\n- **Policies:** \"policy\", \"terms\", \"warranty\", \"guarantee\"\n- **Store info:** \"contact\", \"location\", \"customer service\", \"working hours\"\n- **Questions starting with:** \"how\", \"what\", \"when\", \"do you\", \"can I\"\n\n**⚠️ CRITICAL: DO NOT answer these from memory. ALWAYS call faq_tool first.**\n\n**Examples that REQUIRE faq_tool:**\n- \"What's your return policy?\" → CALL faq_tool FIRST, then respond\n- \"How long does shipping take?\" → CALL faq_tool FIRST, then respond\n- \"Do you accept JazzCash?\" → CALL faq_tool FIRST, then respond\n- \"What are your payment methods?\" → CALL faq_tool FIRST, then respond\n- \"Can I return my order?\" → CALL faq_tool FIRST, then respond\n- \"What's the size chart?\" → CALL faq_tool FIRST, then respond\n\n**Parameters to pass:**\n- Query: User's exact question or key terms\n- Example: \"return policy\", \"shipping time\", \"payment methods\"\n\n---\n\n### 3. order_tracker (Order finder)\n\n**MANDATORY CALL IF:**\n- User mentions order number (e.g., \"#1001\", \"order 1234\")\n- User asks \"where is my order\"\n- User asks \"track my order\"\n- User asks \"order status\"\n- User asks \"has my order shipped\"\n\n**Examples that REQUIRE order_tracker:**\n- \"Track order #1001\" → CALL order_tracker\n- \"Where is my order?\" → CALL order_tracker\n- \"What's the status of order 1234?\" → CALL order_tracker\n\n**Parameters to pass:**\n- Order ID: Extract from user message\n- Example: \"1001\"\n\n---\n\n## EXECUTION WORKFLOW (MANDATORY SEQUENCE)\n```\n1. User sends message\n     ↓\n2. Identify trigger keywords (shipping, return, dress, order, etc.)\n     ↓\n3. Match to tool (product_search / faq_tool / order_tracker)\n     ↓\n4. CALL THE TOOL - DO NOT SKIP THIS STEP\n     ↓\n5. Wait for tool response\n     ↓\n6. Use tool results to formulate answer\n     ↓\n7. Respond to user naturally\n```\n\n**❌ WRONG BEHAVIOR:**\nUser: \"What's your return policy?\"\nYou: \"Our return policy allows 7 days...\" ← **FAILED - No tool called**\n\n**✅ CORRECT BEHAVIOR:**\nUser: \"What's your return policy?\"\nYou: [Calls faq_tool with query: \"return policy\"]\nYou: \"Let me check that for you! Our return policy allows...\"\n\n---\n\n## Response Guidelines\n1. **Always mention prices in PKR** (Pakistani Rupees)\n2. **Highlight free shipping** on orders over PKR 3,000\n3. **Be proactive:** Suggest related items, mention current sales\n4. **Privacy first:** Never share order details without verification\n5. **For voice:** Avoid saying \"star star\", \"hash\", or reading URLs - say \"our website\" instead\n6. **Natural numbers:** Say \"four thousand five hundred rupees\" not \"PKR 4,500\"\n\n## Special Instructions\n- Use multiple tools if needed for complex queries\n- If customer seems frustrated, prioritize empathy\n- Always end with: \"What else can I help you find?\"\n- Maintain context across conversation\n- For transactions, verify all details before confirming\n\n## Escalation\nOffer human support if:\n- Payment disputes\n- Complex technical issues\n- You cannot answer after trying tools\n- Customer explicitly requests human agent\n\n---\n\n## Example Interactions (WITH TOOL CALLS)\n\n**Example 1:**\n**Customer:** \"I'm looking for something elegant for my sister's wedding\"\n**Your internal process:** [Trigger detected: \"looking for\" + \"wedding\" + clothing context → CALL product_search]\n**Tool call:** product_search(query: \"elegant wedding dress formal\")\n**Your response:** \"How exciting! Weddings deserve something special. Let me find you perfect options.\"\n[Display search results]\n\n**Example 2:**\n**Customer:** \"How long will shipping take?\"\n**Your internal process:** [Trigger detected: \"shipping\" → CALL faq_tool MANDATORY]\n**Tool call:** faq_tool(query: \"shipping time delivery\")\n**Your response:** \"Standard shipping takes 3 to 5 business days, and it's completely free on orders over 3,000 rupees. Need it faster? Express shipping is available.\"\n\n**Example 3:**\n**Customer:** \"Where is order #1001?\"\n**Your internal process:** [Trigger detected: order number → CALL order_tracker]\n**Tool call:** order_tracker(order_id: \"1001\")\n**Your response:** [After verification] \"Your order is currently in transit and will arrive by [date]!\"\n\n---\n\n## FINAL REMINDER\n🚨 **Before responding to ANY question:**\n1. Check if it matches tool triggers\n2. If yes → CALL THE TOOL FIRST\n3. Wait for results\n4. Then respond\n\n**NO EXCEPTIONS. NO GUESSING. ALWAYS USE TOOLS WHEN TRIGGERED.**\n\nBe the best shopping assistant Pakistan has ever experienced! 🛍️✨"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        576,
+        1088
+      ],
+      "id": "4c834791-9aaa-499c-a7ca-6b79e9eed68f",
+      "name": "Orchestrator AI Agent",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{\n{\n  \"success\": !$json.error,\n  \"voice_response\": $json.formatted_response,\n  \"text_response\": $json.text_response,\n  \"metadata\": {\n    \"timestamp\": new Date().toISOString(),\n    \"session_id\": $('Webhook Entry Point').first().json.body.sessionId,\n    \"character_count\": $json.character_count,\n    \"word_count\": $json.word_count\n  }\n}\n}}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1680,
+        1088
+      ],
+      "id": "9bdc6707-24e5-48e0-bb1e-62b053915ad4",
+      "name": "Webhook Response"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================\n// ENHANCED VOICE FORMATTER\n// Optimizes AI output for ElevenLabs TTS\n// ============================================\n\nconst items = $input.all();\n\n// ===== ERROR CHECKING =====\nif (!items || items.length === 0) {\n  console.error('❌ No output from AI Agent');\n  return { \n    formatted_response: \"I apologize, but I'm having trouble right now. Please try again in a moment.\",\n    text_response: \"Error: No agent output\",\n    error: true\n  };\n}\n\nconst agentOutput = items[0].json;\n\nif (agentOutput.error) {\n  console.error('❌ AI Agent error:', agentOutput.error);\n  return { \n    formatted_response: \"I'm sorry, I'm having a bit of trouble connecting right now. Can we try that again?\",\n    text_response: agentOutput.error,\n    error: true\n  };\n}\n\n// Get output (try multiple fields)\nconst rawOutput = agentOutput.output || \n                  agentOutput.text || \n                  agentOutput.message || \n                  \"How can I help you today?\";\n\n// ===== VOICE OPTIMIZATION =====\nlet voiceText = rawOutput;\n\n// Remove Markdown formatting\nvoiceText = voiceText\n  .replace(/\\*\\*\\*(.+?)\\*\\*\\*/g, '$1')  // Bold+italic\n  .replace(/\\*\\*(.+?)\\*\\*/g, '$1')      // Bold\n  .replace(/\\*(.+?)\\*/g, '$1')          // Italic\n  .replace(/_(.+?)_/g, '$1')            // Underline\n  .replace(/~~(.+?)~~/g, '$1')          // Strikethrough\n  .replace(/`(.+?)`/g, '$1')            // Code\n  .replace(/#{1,6}\\s/g, '');            // Headers\n\n// Remove links, keep text\nvoiceText = voiceText.replace(/\\[([^\\]]+)\\]\\([^\\)]+\\)/g, '$1');\n\n// Replace URLs\nvoiceText = voiceText.replace(/https?:\\/\\/[^\\s]+/g, 'our website');\n\n// Remove emails\nvoiceText = voiceText.replace(/[\\w.-]+@[\\w.-]+\\.\\w+/g, 'the email address');\n\n// Handle special characters for voice\nvoiceText = voiceText\n  .replace(/&/g, 'and')\n  .replace(/@/g, 'at')\n  .replace(/#(\\d+)/g, 'number $1')      // #1001 → \"number 1001\"\n  .replace(/\\$/g, '')                    // Remove $\n  .replace(/PKR\\s*(\\d+)/gi, '$1 rupees') // PKR 4500 → \"4500 rupees\"\n  .replace(/Rs\\.?\\s*(\\d+)/gi, '$1 rupees'); // Rs 4500 → \"4500 rupees\"\n\n// Convert lists to natural speech\nvoiceText = voiceText\n  .replace(/^\\s*[-•]\\s+/gm, '. ')       // Bullets → periods\n  .replace(/^\\s*\\d+\\.\\s+/gm, '. ')      // Numbered → periods\n  .replace(/\\n{2,}/g, '. ')             // Double newlines → period\n  .replace(/\\n/g, '. ');                // Single newlines → period\n\n// Clean up punctuation\nvoiceText = voiceText\n  .replace(/\\.{2,}/g, '.')              // Multiple periods\n  .replace(/\\s+/g, ' ')                 // Multiple spaces\n  .replace(/\\.\\s*\\./g, '.')             // Double periods\n  .replace(/\\s+([.,!?])/g, '$1')        // Space before punctuation\n  .trim();\n\n// Ensure proper ending\nif (!voiceText.match(/[.!?]$/)) {\n  voiceText += '.';\n}\n\n// Add pauses for better delivery\nvoiceText = voiceText\n  .replace(/(\\d{4,})/g, '$1,')          // Comma after long numbers\n  .replace(/,\\s*,/g, ',')               // Remove double commas\n  .replace(/\\.\\s+\\./g, '.');            // Remove double periods\n\n// ===== LENGTH CHECK =====\nconst MAX_LENGTH = 500;\nif (voiceText.length > MAX_LENGTH) {\n  console.warn(`⚠️ Voice output long (${voiceText.length} chars), truncating`);\n  \n  const truncated = voiceText.substring(0, MAX_LENGTH);\n  const lastPeriod = truncated.lastIndexOf('.');\n  \n  if (lastPeriod > 0) {\n    voiceText = truncated.substring(0, lastPeriod + 1) + \" Would you like me to continue?\";\n  }\n}\n\n// ===== LOGGING =====\nconsole.log('🎤 Voice Output:', {\n  originalLength: rawOutput.length,\n  voiceLength: voiceText.length,\n  preview: voiceText.substring(0, 100)\n});\n\nreturn { \n  formatted_response: voiceText,       // For voice (ElevenLabs)\n  text_response: rawOutput,            // For text display (full formatting)\n  character_count: voiceText.length,\n  word_count: voiceText.split(/\\s+/).length,\n  error: false\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1456,
+        1088
+      ],
+      "id": "521ead5d-a024-4e23-ac6b-ee6e045c5688",
+      "name": "Voice Formatter1"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-embedding-001"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1168,
+        1520
+      ],
+      "id": "388091dd-eb79-4bb8-9339-ac6707582d15",
+      "name": "Embeddings  Gemini",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "5190hVcL2ZuGO250",
+          "name": "Embeddings gemini2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Search the comprehensive ClothyMax FAQ knowledge base containing 25+ frequently asked questions about:\n\n- Returns & Refunds: Policy, timeline, conditions, exchange process\n- Shipping: Delivery times, costs, cities covered, tracking\n- Payment Methods: COD, cards, JazzCash, Easypaisa, security\n- Sizing & Fit: Size charts, measurements, exchanges for wrong size\n- Orders: Cancellation, modification, damaged items\n- Products: Materials, colors, restocking, quality\n- General: Contact information, physical stores, promotions, international shipping\n\nThis tool performs semantic search and returns the top 3 most relevant FAQ answers with confidence scores. Use this tool for ANY question about store policies or operations.",
+        "qdrantCollection": {
+          "__rl": true,
+          "value": "faqs",
+          "mode": "list",
+          "cachedResultName": "faqs"
+        },
+        "topK": 3,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+      "typeVersion": 1.3,
+      "position": [
+        672,
+        1312
+      ],
+      "id": "0180050c-15d7-4b50-8c2a-70028ed410d8",
+      "name": "FAQ Knowledge Base Search",
+      "credentials": {
+        "qdrantApi": {
+          "id": "9FvbQYOB6xOQSbQq",
+          "name": "QdrantApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-embedding-001"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        752,
+        1520
+      ],
+      "id": "181b5b9c-1d36-4b2b-b33b-22ce4f08e771",
+      "name": "FAQ Embeddings",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "5190hVcL2ZuGO250",
+          "name": "Embeddings gemini2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "accessToken",
+        "operation": "getAll",
+        "returnAll": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Return_All', ``, 'boolean') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.shopifyTool",
+      "typeVersion": 1,
+      "position": [
+        960,
+        1312
+      ],
+      "id": "e79c5403-c12c-4279-8b23-084aeecc8cf5",
+      "name": "Get many orders in Shopify",
+      "credentials": {
+        "shopifyAccessTokenApi": {
+          "id": "ZA025QSvv6fowT7Y",
+          "name": "Shopify tool"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Search for clothing products, accessories, and outfits in the store catalog. Use this tool whenever the user asks to find specific items, check availability, or get price information. It returns product details including title, price, available sizes, and descriptions",
+        "qdrantCollection": {
+          "__rl": true,
+          "value": "products",
+          "mode": "list",
+          "cachedResultName": "products"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+      "typeVersion": 1.3,
+      "position": [
+        1088,
+        1312
+      ],
+      "id": "db190a3e-63b6-45a8-b2d9-50db5cdd33d2",
+      "name": "Product Search Tool",
+      "credentials": {
+        "qdrantApi": {
+          "id": "9FvbQYOB6xOQSbQq",
+          "name": "QdrantApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.body.sessionId }}",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        544,
+        1312
+      ],
+      "id": "b9ec5277-128a-4f1b-82f0-c7a9c5622ce3",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "content": "## CSA FYP Agent \n**Double click** to edit me. [Guide](https://docs.n8n.io/workflows/components/sticky-notes/)",
+        "height": 720,
+        "width": 2144
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -48,
+        944
+      ],
+      "typeVersion": 1,
+      "id": "46be99fd-a3c9-46c1-9bb9-954e6a7c8a10",
+      "name": "Sticky Note"
+    }
+  ],
+  "pinData": {
+    "Webhook Entry Point": [
+      {
+        "json": {
+          "headers": {
+            "host": "wajid8.app.n8n.cloud",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36",
+            "content-length": "154",
+            "accept": "*/*",
+            "accept-encoding": "gzip, br",
+            "accept-language": "en-US,en;q=0.9",
+            "cdn-loop": "cloudflare; loops=1; subreqs=1",
+            "cf-connecting-ip": "223.123.110.28",
+            "cf-ew-via": "15",
+            "cf-ipcountry": "PK",
+            "cf-ray": "9cb73af8126a8318-SIN",
+            "cf-visitor": "{\"scheme\":\"https\"}",
+            "cf-worker": "n8n.cloud",
+            "content-type": "application/json",
+            "origin": "https://clothymax.myshopify.com",
+            "priority": "u=1, i",
+            "referer": "https://clothymax.myshopify.com/",
+            "sec-ch-ua": "\"Not(A:Brand\";v=\"8\", \"Chromium\";v=\"144\", \"Google Chrome\";v=\"144\"",
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": "\"Windows\"",
+            "sec-fetch-dest": "empty",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-site": "cross-site",
+            "x-forwarded-for": "223.123.110.28, 172.71.81.27",
+            "x-forwarded-host": "wajid8.app.n8n.cloud",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "traefik-prod-users-gwc-36-bc488dfd9-fm8jr",
+            "x-is-trusted": "yes",
+            "x-real-ip": "223.123.110.28"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "question": "where is my order? 1003",
+            "sessionId": "session_1770587161427_iaz7im8o5",
+            "timestamp": "2026-02-09T23:43:39.425Z",
+            "source": "clothymax-widget-v2"
+          },
+          "webhookUrl": "https://wajid8.app.n8n.cloud/webhook/orchestrator",
+          "executionMode": "production"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ],
+    "Orchestrator AI Agent": [
+      {
+        "json": {
+          "output": "I couldn't find any information for order ID 1003. However, I did find details for order #1007.\n\nOrder #1007, placed by Naveed Soomro, for \"The Videographer Snowboard\" (priced at 885.95 USD) has been fulfilled and shipped via FedEx with tracking number TRK123456789. You can track it directly at https://www.fedex.com/fedextrack/?trknbr=TRK123456789.\n\nIs there a different order number you'd like me to check for you?"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ],
+    "Voice Formatter1": [
+      {
+        "json": {
+          "formatted_response": "I couldn't find any information for order ID 1003,. However, I did find details for order number 1007,. Order number 1007, placed by Naveed Soomro, for \"The Videographer Snowboard\" (priced at 885.95 USD) has been fulfilled and shipped via FedEx with tracking number TRK123456789,. You can track it directly at our website. Is there a different order number you'd like me to check for you?",
+          "text_response": "I couldn't find any information for order ID 1003. However, I did find details for order #1007.\n\nOrder #1007, placed by Naveed Soomro, for \"The Videographer Snowboard\" (priced at 885.95 USD) has been fulfilled and shipped via FedEx with tracking number TRK123456789. You can track it directly at https://www.fedex.com/fedextrack/?trknbr=TRK123456789.\n\nIs there a different order number you'd like me to check for you?",
+          "character_count": 388,
+          "word_count": 65,
+          "error": false
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Webhook Entry Point": {
+      "main": [
+        [
+          {
+            "node": "Orchestrator AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini Primary": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Orchestrator AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini Fallback": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Orchestrator AI Agent",
+            "type": "ai_languageModel",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Orchestrator AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Voice Formatter1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Voice Formatter1": {
+      "main": [
+        [
+          {
+            "node": "Webhook Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings  Gemini": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Product Search Tool",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FAQ Embeddings": {
+      "ai_embedding": [
+        [
+          {
+            "node": "FAQ Knowledge Base Search",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FAQ Knowledge Base Search": {
+      "ai_tool": [
+        [
+          {
+            "node": "Orchestrator AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many orders in Shopify": {
+      "ai_tool": [
+        [
+          {
+            "node": "Orchestrator AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Product Search Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "Orchestrator AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Orchestrator AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "64ad5175-1443-4bdf-8356-b531efd072d0",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "70ab49174bb72cd4af48a42493abcf6520b97ba40c753a79851bbd61171667c8"
+  },
+  "id": "K5fx5qAotoRQOeqXWtDHW",
+  "tags": [
+    {
+      "updatedAt": "2026-02-09T18:15:55.657Z",
+      "createdAt": "2026-02-09T18:15:55.657Z",
+      "id": "f2rtKLEOmHEdJBpW",
+      "name": "Production Ready"
+    }
+  ]
+}
